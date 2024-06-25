@@ -5,9 +5,8 @@ const { checkBody }  = require("../modules/checkBody");
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
 
-
-
-//route test signup user qui fonctionne
+//rappel app.use('/users', usersRouter) dans app.js donc il faut faire /users/... pour accéder a ces routes
+//signup(inscription) d'un utilisateur
 router.post('/signup', function(req, res) {
   Users.findOne({ username: req.body.username}).then(data => {
     if (data === null) {
@@ -30,8 +29,7 @@ router.post('/signup', function(req, res) {
   });
 });
 
-//route test signing user qui fonctionne
-
+//signing (login) user
 router.post('/signin', (req, res) => {
   if (!checkBody(req.body, ['username', 'password'])) {
     res.json({ result : false , error : 'Missing parameters' });

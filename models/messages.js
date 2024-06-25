@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const messagesSchema = mongoose.Schema({
     text : String,
-    hashtag : String,
+    hashtag : Array,
     date : Date,
     likecount : Number,
     userId : { type : mongoose.Schema.Types.ObjectId, ref : 'Users' }
