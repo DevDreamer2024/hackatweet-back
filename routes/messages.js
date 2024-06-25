@@ -45,7 +45,10 @@ router.get("/", function (req, res) {
 });
 
 // obtenir un message par son hashtag (messages/hashtag)
+// cela fonctionne mais bien penser a ajouter # devant le req.params.hashtag
+
 router.get("/:hashtag", function (req, res) {
+  console.log(req.params.hashtag);
   Messages.find({ hashtag: {$in : [req.params.hashtag]}})
   .populate({
     path : "userId",
