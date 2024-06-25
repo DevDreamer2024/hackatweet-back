@@ -46,7 +46,7 @@ router.get("/", function (req, res) {
 
 // obtenir un message par son hashtag (messages/hashtag)
 router.get("/:hashtag", function (req, res) {
-  Messages.find({ hashtag: req.params.hashtag })
+  Messages.find({ hashtag: {$in : [req.params.hashtag]}})
   .populate({
     path : "userId",
     select : '-_id -password'
