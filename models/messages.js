@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const messagesSchema = mongoose.Schema({
     text : String,
     hashtag : String,
-    date : new Date(),
+    date : Date,
     likecount : Number,
-    auteur : { type : mongoose.Schema.Types.ObjectId, ref : 'Users' }
+    userId : { type : mongoose.Schema.Types.ObjectId, ref : 'Users' }
 });
 
 const Messages = mongoose.model('Messages', messagesSchema);

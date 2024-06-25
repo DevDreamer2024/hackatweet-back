@@ -3,12 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+require('./models/connection');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var messagesRouter = require('./routes/messages');
 var app = express();
-require('./models/connection');
+
 const cors = require('cors');
 app.use(cors());
 app.use(logger('dev'));

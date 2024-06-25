@@ -1,17 +1,13 @@
 var express = require('express');
 var router = express.Router();
-import Users from '../models/users';
-import { checkBody } from '../modules/checkBody';
-
+const Users = require('../models/users');
+const { checkBody }  = require("../modules/checkBody");
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
 
-/* GET users listing. */
-router.get('/', function(req, res) {
-  res.send('respond with a resource');
-});
 
-//route test signup user a essayer
+
+//route test signup user qui fonctionne
 router.post('/signup', function(req, res) {
   Users.findOne({ username: req.body.username}).then(data => {
     if (data === null) {
@@ -34,9 +30,9 @@ router.post('/signup', function(req, res) {
   });
 });
 
-//route test signing user a essayer
+//route test signing user qui fonctionne
 
-router.post('signin', (req, res) => {
+router.post('/signin', (req, res) => {
   if (!checkBody(req.body, ['username', 'password'])) {
     res.json({ result : false , error : 'Missing parameters' });
     return;
@@ -49,14 +45,6 @@ router.post('signin', (req, res) => {
     }
 });
 });
-
-
-
-
-
-
-
-
 
 
 module.exports = router;
