@@ -19,8 +19,7 @@ router.post('/signup', function(req, res) {
         password : hash,
       });
       user.save()
-        .then(() => Users.find())
-        .then(users => res.send(users))
+        .then(data => res.json({ result : true, token : user.token }))
         .catch(error => res.status(400).send(error))
     }
     else {

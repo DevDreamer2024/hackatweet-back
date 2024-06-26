@@ -5,10 +5,7 @@ const Messages = require("../models/messages");
 //rappel : app.use('/messages', messagesRouter) dans app.js donc il faut faire /messages/... pour accéder a ces routes
 //ajouter un nouveau message a essayer
 router.post("/", function (req, res) {
-  if (
-    req.body.text === undefined ||
-    req.body.userId === undefined
-  ) {
+  if (req.body.text === undefined || req.body.userId === undefined) {
     res.status(400).send("Missing parameters");
     return;
   }
@@ -25,21 +22,21 @@ router.post("/", function (req, res) {
     .then(() =>
       Messages.find()
         .populate({
-          path : "userId",
-          select : '-_id -password'
+          path: "userId",
+          select: "-_id -password",
         })
         .then((messages) => res.send(messages))
     )
     .catch((error) => res.status(400).send(error));
 });
 
-//obtenir tout les messages a essayer
+//obtenir tout les messages
 router.get("/", function (req, res) {
   Messages.find()
-  .populate({
-    path : "userId",
-    select : '-_id -password'
-  })
+    .populate({
+      path: "userId",
+      select: "-_id -password",
+    })
     .then((messages) => res.send(messages))
     .catch((error) => res.status(400).send(error));
 });
@@ -49,11 +46,11 @@ router.get("/", function (req, res) {
 
 router.get("/:hashtag", function (req, res) {
   console.log(req.params.hashtag);
-  Messages.find({ hashtag: {$in : [req.params.hashtag]}})
-  .populate({
-    path : "userId",
-    select : '-_id -password'
-  })
+  Messages.find({ hashtag: { $in: [req.params.hashtag] } })
+    .populate({
+      path: "userId",
+      select: "-_id -password",
+    })
     .then((messages) => res.send(messages))
     .catch((error) => res.status(400).send(error));
 });
@@ -61,10 +58,10 @@ router.get("/:hashtag", function (req, res) {
 //route test pour trouver tout les messages d'un utilisateur (messages/id)
 router.get("/messages/:id", function (req, res) {
   Messages.find({ userId: req.params.id })
-  .populate({
-    path : "userId",
-    select : '-_id -password'
-  })
+    .populate({
+      path: "userId",
+      select: "-_id -password",
+    })
     .then((messages) => res.send(messages))
     .catch((error) => res.status(400).send(error));
 });
@@ -74,10 +71,10 @@ router.delete("/message/:id", function (req, res) {
   Messages.findByIdAndDelete(req.params.id)
     .then(() =>
       Messages.find()
-    .populate({
-      path : "userId",
-      select : '-_id -password'
-    })
+        .populate({
+          path: "userId",
+          select: "-_id -password",
+        })
         .then((messages) => res.send(messages))
     )
     .catch((error) => res.status(400).send(error));
@@ -94,7 +91,7 @@ router.put("/like/:id", function (req, res) {
     .then((data) => res.send(data))
     .catch((error) => res.status(400).send(error));
 });
-//route diminuer un like a un message a essayer
+//route diminuer un like a un message
 router.put("/dislike/:id", function (req, res) {
   const id = req.params.id;
   Messages.findOneAndUpdate(
