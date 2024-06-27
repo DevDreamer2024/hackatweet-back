@@ -1,40 +1,48 @@
 var express = require("express");
 var router = express.Router();
 const Messages = require("../models/messages");
-
+const Users = require("../models/users");
 //rappel : app.use('/messages', messagesRouter) dans app.js donc il faut faire /messages/... pour accéder a ces routes
 //ajouter un nouveau message a essayer
 router.post("/", function (req, res) {
-  if (req.body.text === undefined || req.body.userId === undefined) {
+  console.log(req.body);
+  if (req.body.text === undefined || req.body.userToken === undefined) {
     res.status(400).send("Missing parameters");
     return;
   }
-  const hashtag = req.body.text.match(/#[a-z]+/gi); //regex pour trouver les hashtags directement dans le texte, hashtag est un array dans le schema
-  const message = new Messages({
-    text: req.body.text,
-    hashtag: hashtag,
-    date: Date.now(),
-    likecount: 0,
-    userId: req.body.userId,
-  });
-  message
-    .save() //le populate renvoi tout sauf id et password
-    .then(() =>
-      Messages.find()
-        .populate({
-          path: "userId",
-          select: "-_id -password",
-        })
-        .then((messages) => res.send(messages))
-    )
-    .catch((error) => res.status(400).send(error));
+  const hashtag = req.body.text.match(/#[a-z]+/gi); // regex pour trouver les hashtags directement dans le texte, hashtag est un array dans le schema
+
+  Users.findOne({ token: req.body.userToken }).then((user) => {
+    if (!user) {
+      res.status(400).send("User not found");
+      return;
+    }
+    const message = new Messages({
+      text: req.body.text,
+      hashtag: hashtag,
+      date: Date.now(),
+      likecount: 0,
+      userToken: user._id, // Store the ObjectId of the user
+    });
+    message
+      .save()
+      .then(() =>
+        Messages.find()
+          .populate({
+            path: "userToken",
+            select: "-_id -password",
+          })
+          .then((messages) => res.send(messages))
+      )
+      .catch((error) => res.status(400).send(error));
+  }).catch((error) => res.status(500).send(error)); // Add catch block for Users.findOne
 });
 
 //obtenir tout les messages
 router.get("/", function (req, res) {
   Messages.find()
     .populate({
-      path: "userId",
+      path: "userToken",
       select: "-_id -password",
     })
     .then((messages) => res.send(messages))
@@ -48,22 +56,29 @@ router.get("/:hashtag", function (req, res) {
   console.log(req.params.hashtag);
   Messages.find({ hashtag: { $in: [req.params.hashtag] } })
     .populate({
-      path: "userId",
+      path: "userToken",
       select: "-_id -password",
     })
     .then((messages) => res.send(messages))
     .catch((error) => res.status(400).send(error));
 });
 
+
 //route test pour trouver tout les messages d'un utilisateur (messages/id)
-router.get("/messages/:id", function (req, res) {
-  Messages.find({ userId: req.params.id })
-    .populate({
-      path: "userId",
-      select: "-_id -password",
-    })
-    .then((messages) => res.send(messages))
-    .catch((error) => res.status(400).send(error));
+router.get("/messages/:token", function (req, res) {
+  Users.findOne({ token: req.params.token }).then((user) => {
+    if (!user) {
+      res.status(400).send("User not found");
+      return;
+    }
+    Messages.find({ userToken: user._id })
+      .populate({
+        path: "userToken",
+        select: "-_id -password",
+      })
+      .then((messages) => res.send(messages))
+      .catch((error) => res.status(400).send(error));
+  }).catch((error) => res.status(500).send(error)); // Add catch block for Users.findOne
 });
 
 //supprimer un message
@@ -72,7 +87,7 @@ router.delete("/message/:id", function (req, res) {
     .then(() =>
       Messages.find()
         .populate({
-          path: "userId",
+          path: "userToken",
           select: "-_id -password",
         })
         .then((messages) => res.send(messages))
@@ -102,5 +117,4 @@ router.put("/dislike/:id", function (req, res) {
     .then((data) => res.send(data))
     .catch((error) => res.status(400).send(error));
 });
-
 module.exports = router;

@@ -23,7 +23,7 @@ router.post('/signup', function(req, res) {
         .catch(error => res.status(400).send(error))
     }
     else {
-      res.status(400).send('User already exists');
+      res.json({ result : false, error : 'User already exists' });
     }
   });
 });
