@@ -12,30 +12,32 @@ router.post("/", function (req, res) {
   }
   const hashtag = req.body.text.match(/#[a-z]+/gi); // regex pour trouver les hashtags directement dans le texte, hashtag est un array dans le schema
 
-  Users.findOne({ token: req.body.userToken }).then((user) => {
-    if (!user) {
-      res.status(400).send("User not found");
-      return;
-    }
-    const message = new Messages({
-      text: req.body.text,
-      hashtag: hashtag,
-      date: Date.now(),
-      likecount: 0,
-      userToken: user._id, // Store the ObjectId of the user
-    });
-    message
-      .save()
-      .then(() =>
-        Messages.find()
-          .populate({
-            path: "userToken",
-            select: "-_id -password",
-          })
-          .then((messages) => res.send(messages))
-      )
-      .catch((error) => res.status(400).send(error));
-  }).catch((error) => res.status(500).send(error)); // Add catch block for Users.findOne
+  Users.findOne({ token: req.body.userToken })
+    .then((user) => {
+      if (!user) {
+        res.status(400).send("User not found");
+        return;
+      }
+      const message = new Messages({
+        text: req.body.text,
+        hashtag: hashtag,
+        date: Date.now(),
+        likecount: 0,
+        userToken: user._id, // Store the ObjectId of the user
+      });
+      message
+        .save()
+        .then(() =>
+          Messages.find()
+            .populate({
+              path: "userToken",
+              select: "-_id -password",
+            })
+            .then((messages) => res.send(messages))
+        )
+        .catch((error) => res.status(400).send(error));
+    })
+    .catch((error) => res.status(500).send(error)); // Add catch block for Users.findOne
 });
 
 //obtenir tout les messages
@@ -63,22 +65,23 @@ router.get("/:hashtag", function (req, res) {
     .catch((error) => res.status(400).send(error));
 });
 
-
 //route test pour trouver tout les messages d'un utilisateur (messages/id)
 router.get("/messages/:token", function (req, res) {
-  Users.findOne({ token: req.params.token }).then((user) => {
-    if (!user) {
-      res.status(400).send("User not found");
-      return;
-    }
-    Messages.find({ userToken: user._id })
-      .populate({
-        path: "userToken",
-        select: "-_id -password",
-      })
-      .then((messages) => res.send(messages))
-      .catch((error) => res.status(400).send(error));
-  }).catch((error) => res.status(500).send(error)); // Add catch block for Users.findOne
+  Users.findOne({ token: req.params.token })
+    .then((user) => {
+      if (!user) {
+        res.status(400).send("User not found");
+        return;
+      }
+      Messages.find({ userToken: user._id })
+        .populate({
+          path: "userToken",
+          select: "-_id -password",
+        })
+        .then((messages) => res.send(messages))
+        .catch((error) => res.status(400).send(error));
+    })
+    .catch((error) => res.status(500).send(error)); // Add catch block for Users.findOne
 });
 
 //supprimer un message
@@ -94,27 +97,31 @@ router.delete("/:id", function (req, res) {
     )
     .catch((error) => res.status(400).send(error));
 });
+
 //
 //cette route prend l'id du message et incrémente le likecount de 1
-router.put("/like/:id", function (req, res) {
+router.put("/togglelike/:id", function (req, res) {
   const id = req.params.id;
-  Messages.findOneAndUpdate(
-    { _id: id },
-    { $inc: { likecount: 1 } },
-    { new: true }
-  )
-    .then((data) => res.send(data))
+  const userToken = req.body.userToken;
+  Messages.findById(id)
+    .then((message) => {
+      if (!message) {
+        res.status(400).send("Message not found");
+        return;
+      }
+      if (message.likedBy.includes(userToken)) {
+        message.likecount -= 1;
+        message.likedBy.pull(userToken);
+      } else {
+        message.likecount += 1;
+        message.likedBy.push(userToken);
+      }
+      message
+        .save()
+        .then((data) => res.send(data))
+        .catch((error) => res.status(400).send(error));
+    })
     .catch((error) => res.status(400).send(error));
 });
-//route diminuer un like a un message
-router.put("/dislike/:id", function (req, res) {
-  const id = req.params.id;
-  Messages.findOneAndUpdate(
-    { _id: id },
-    { $inc: { likecount: -1 } },
-    { new: true }
-  )
-    .then((data) => res.send(data))
-    .catch((error) => res.status(400).send(error));
-});
+
 module.exports = router;

@@ -5,7 +5,8 @@ const messagesSchema = mongoose.Schema({
     hashtag : Array,
     date : Date,
     likecount : Number,
-    userToken: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' }
+    userToken: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' },
+    likedBy : Array,
 });
 
 const Messages = mongoose.model('Messages', messagesSchema);
