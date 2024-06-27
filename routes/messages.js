@@ -82,7 +82,7 @@ router.get("/messages/:token", function (req, res) {
 });
 
 //supprimer un message
-router.delete("/message/:id", function (req, res) {
+router.delete("/:id", function (req, res) {
   Messages.findByIdAndDelete(req.params.id)
     .then(() =>
       Messages.find()
